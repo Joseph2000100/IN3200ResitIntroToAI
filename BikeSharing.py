@@ -4,6 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 
+# Calculate mean squared error
+def mean_squared_error(y_true, y_pred):
+   return np.mean((y_true - y_pred) ** 2)
+
+
+# Calculate the R^2 coefficient
+def r2_score(y_true, y_pred):
+   ss_total = np.sum((y_true - np.mean(y_true)) ** 2)
+   ss_residual = np.sum((y_true - y_pred) ** 2)
+   return 1 - (ss_residual / ss_total)
 
 # Load the dataset
 def load_dataset(filepath):
