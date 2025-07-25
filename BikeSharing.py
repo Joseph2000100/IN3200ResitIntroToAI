@@ -85,6 +85,24 @@ def create_exploratory_plots(df):
     plt.show()
 
 
+# Visualize regression results
+def plot_regression_results(X_test, y_test, y_pred, feature_idx=0, feature_name='Temperature'):
+    plt.figure(figsize=(10, 6))
+    plt.scatter(X_test[:, feature_idx], y_test, color='blue', alpha=0.5, label='Actual')
+    plt.scatter(X_test[:, feature_idx], y_pred, color='red', alpha=0.5, label='Predicted')
+   
+    # Sort for line plot
+    sorted_idx = np.argsort(X_test[:, feature_idx])
+    plt.plot(X_test[sorted_idx, feature_idx], y_pred[sorted_idx], color='green', linewidth=2, label='Regression Line')
+   
+    plt.title(f'{feature_name} vs Bike Demand (Test Data)')
+    plt.xlabel(feature_name)
+    plt.ylabel('Number of Bikes Rented')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+
 # Linear Regression with Gradient Descent
 class LinearRegression:
     def __init__(self, learning_rate=0.01, n_iterations=1000):
@@ -168,6 +186,49 @@ def main():
     print(f"\nFeatures used for the model: {features}")
     print(f"Training set size: {X_train.shape[0]} samples")
     print(f"Testing set size: {X_test.shape[0]} samples")
+
+    # Batch Gradient Descent
+    batch_model = LinearRegression(learning_rate=0.1, n_iterations=1000)
+    batch_model.fit_batch(X_train, y_train)
+
+    # Stochastic Gradient Descent
+    sgd_model = LinearRegression(learning_rate=0.001, n_iterations=10)
+    sgd_model.fit_sgd(X_train, y_train)
+
+    # Make predictions on test set
+    batch_predictions = batch_model.predict(X_test)
+    sgd_predictions = sgd_model.predict(X_test)
+
+    # Evaluate model
+    batch_mse = mean_squared_error(y_test, batch_predictions)
+    batch_r2 = r2_score(y_test, batch_predictions)
+    print(f"Batch Gradient Descent - Mean Squared Error: {batch_mse:.2f}")
+    print(f"Batch Gradient Descent - R^2 Score: {batch_r2:.4f}")
+
+    # Evaluate model
+    sgd_mse = mean_squared_error(y_test, sgd_predictions)
+    sgd_r2 = r2_score(y_test, sgd_predictions)
+    print(f"Stochastic Gradient Descent - Mean Squared Error: {sgd_mse:.2f}")
+    print(f"Stochastic Gradient Descent - R^2 Score: {sgd_r2:.4f}")
+
+    # Visualize results
+    print("\nPlotting regression results for Batch Gradient Descent...")
+    # Plot regression lines for all features
+    for i, feature in enumerate(features):
+        print(f"Plotting regression line for {feature}...")
+        plot_regression_results(X_test, y_test, batch_predictions, i, feature)
+
+    # Make prediction for specific values
+    print("\nPredictions for specific values:")
+    new_data = np.array([[0.5, 0.5, 0.6, 0.2]])
+
+    # Predict using both models
+    batch_prediction = batch_model.predict(new_data)
+    sgd_prediction = sgd_model.predict(new_data)
+
+    print(f"Input values: temp={new_data[0][0]}, atemp={new_data[0][1]}, hum={new_data[0][2]}, windspeed={new_data[0][3]}")
+    print(f"Predicted bike rentals with batch gradient descent: {int(batch_prediction[0])}")
+    print(f"Predicted bike rentals with stochastic gradient descent: {int(sgd_prediction[0])}")
 
 
 if __name__ == "__main__":
