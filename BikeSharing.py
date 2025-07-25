@@ -85,6 +85,69 @@ def create_exploratory_plots(df):
     plt.show()
 
 
+# Linear Regression with Gradient Descent
+class LinearRegression:
+    def __init__(self, learning_rate=0.01, n_iterations=1000):
+        self.learning_rate = learning_rate
+        self.n_iterations = n_iterations
+        self.weights = None
+        self.bias = None
+
+    # Batch gradient descent
+    def fit_batch(self, X, y):
+        n_samples, n_features = X.shape
+
+        # Initialize parameters
+        self.weights = np.zeros(n_features)
+        self.bias = 0
+
+        for _ in range(self.n_iterations):
+            # Predictions
+            y_pred = np.dot(X, self.weights) + self.bias
+
+            # Gradients
+            dw = (1 / n_samples) * np.dot(X.T, (y_pred - y))
+            db = (1 / n_samples) * np.sum(y_pred - y)
+
+            # Update parameters
+            self.weights -= self.learning_rate * dw
+            self.bias -= self.learning_rate * db
+
+        return self
+
+    # Stochastic gradient descent
+    def fit_sgd(self, X, y):
+        n_samples, n_features = X.shape
+
+        self.weights = np.zeros(n_features)
+        self.bias = 0
+
+        for _ in range(self.n_iterations):
+            # Shuffle data
+            indices = np.random.permutation(n_samples)
+            X_shuffled = X[indices]
+            y_shuffled = y[indices]
+
+            # Update for each sample
+            for i in range(n_samples):
+                xi = X_shuffled[i].reshape(1, n_features)
+                yi = y_shuffled[i]
+
+                y_pred = np.dot(xi, self.weights) + self.bias
+
+                dw = np.dot(xi.T, (y_pred - yi))
+                db = (y_pred - yi)
+
+                self.weights -= self.learning_rate * dw.flatten()
+                self.bias -= self.learning_rate * db
+
+        return self
+
+    # Prediction function
+    def predict(self, X):
+        return np.dot(X, self.weights) + self.bias
+
+
 # Main script
 def main():
     # Load the data
