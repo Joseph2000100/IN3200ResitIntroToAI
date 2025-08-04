@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 # Create binary classification target
 def create_binary_target(df):
@@ -23,6 +25,18 @@ def select_features_target(df):
     y = df['high_quality']
     
     return X, y
+
+# Split and standardize the dataset
+def split_and_standardize_dataset(X, y):
+    # Train-test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Standardize features
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+    
+    return X_train, X_test, y_train, y_test, X_train_scaled, X_test_scaled, scaler
 
 # Load the dataset
 def load_dataset(filepath):
@@ -75,6 +89,23 @@ def main():
         print(X.head())
         print("\nTarget (y):")
         print(y.head())
+        
+        # Split and Standardize the Dataset
+        print("\nSplit and Standardize the Dataset")
+        X_train, X_test, y_train, y_test, X_train_scaled, X_test_scaled, scaler = split_and_standardize_dataset(X, y)
+        
+        # Display information about the split
+        print(f"\nTrain set size: {X_train.shape[0]} samples")
+        print(f"Test set size: {X_test.shape[0]} samples")
+        
+        # Display class distribution in train and test sets
+        print(f"\nClass distribution in training set:")
+        print(f"Low quality wines (0): {(y_train == 0).sum()}")
+        print(f"High quality wines (1): {(y_train == 1).sum()}")
+        
+        print(f"\nClass distribution in test set:")
+        print(f"Low quality wines (0): {(y_test == 0).sum()}")
+        print(f"High quality wines (1): {(y_test == 1).sum()}")
         
     else:
         print("Failed to load the dataset")
