@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import os
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, confusion_matrix
+import seaborn as sns
 
 # Create binary classification target
 def create_binary_target(df):
@@ -37,6 +40,57 @@ def split_and_standardize_dataset(X, y):
     X_test_scaled = scaler.transform(X_test)
     
     return X_train, X_test, y_train, y_test, X_train_scaled, X_test_scaled, scaler
+
+# Train SVM classifier
+def train_svm_classifier(X_train_scaled, y_train):
+    # Initialize SVM classifier with default parameters
+    svm_clf = SVC(random_state=42)
+    
+    # Train the classifier
+    svm_clf.fit(X_train_scaled, y_train)
+    
+    print("\nSVM Classifier trained successfully")
+    
+    return svm_clf
+
+# Evaluate the model
+def evaluate_model(model, X_test_scaled, y_test, show_plot=False):
+    # Make predictions
+    y_pred = model.predict(X_test_scaled)
+    
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"\nModel Evaluation:")
+    print(f"Accuracy: {accuracy:.4f}")
+    
+    # Calculate and display confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+    print("\nConfusion Matrix:")
+    print(cm)
+    
+    # Create a confusion matrix
+    if show_plot:
+        plt.figure(figsize=(6, 4))
+        plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+        plt.title('Confusion Matrix')
+        plt.colorbar()
+        plt.xticks([0, 1], ['Low Quality', 'High Quality'])
+        plt.yticks([0, 1], ['Low Quality', 'High Quality'])
+        plt.xlabel('Predicted')
+        plt.ylabel('Actual')
+        
+        # Add text annotations
+        for i in range(cm.shape[0]):
+            for j in range(cm.shape[1]):
+                plt.text(j, i, str(cm[i, j]), 
+                         horizontalalignment="center", 
+                         color="white" if cm[i, j] > cm.max() / 2 else "black")
+        
+        plt.tight_layout()
+        plt.show()
+    
+    return accuracy, cm
+
 
 # Load the dataset
 def load_dataset(filepath):
@@ -107,6 +161,14 @@ def main():
         print(f"Low quality wines (0): {(y_test == 0).sum()}")
         print(f"High quality wines (1): {(y_test == 1).sum()}")
         
+        # Train SVM Classifier
+        print("\nTraining SVM Classifier")
+        svm_model = train_svm_classifier(X_train_scaled, y_train)
+        
+        # Evaluate the Model
+        print("\nEvaluating the Model")
+        accuracy, confusion_mat = evaluate_model(svm_model, X_test_scaled, y_test, show_plot=False)
+
     else:
         print("Failed to load the dataset")
 
