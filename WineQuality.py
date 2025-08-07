@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, confusion_matrix
@@ -91,6 +91,40 @@ def evaluate_model(model, X_test_scaled, y_test, show_plot=False):
     
     return accuracy, cm
 
+# Tune hyperparameters
+def tune_hyperparameters(X_train_scaled, y_train):
+    # Parameter grid
+    param_grid = {
+        'C': [0.1, 1, 10, 100],
+        'gamma': [0.01, 0.1, 1, 'scale', 'auto'],
+        'kernel': ['linear', 'rbf', 'poly']
+    }
+    
+    # Initialize SVM classifier
+    svm = SVC(random_state=42)
+    
+    # GridSearch
+    grid_search = GridSearchCV(
+        estimator=svm,
+        param_grid=param_grid,
+        cv=5,
+        scoring='accuracy',
+        verbose=1,
+        n_jobs=-1
+    )
+    
+    # Fit the grid search to the data
+    print("\nPerforming grid search for hyperparameter tuning...")
+    grid_search.fit(X_train_scaled, y_train)
+    
+    # Print best parameters and score
+    print("\nBest Parameters:")
+    print(grid_search.best_params_)
+    print(f"Best Cross-Validation Score: {grid_search.best_score_:.4f}")
+    
+    # Return the best model
+    return grid_search.best_estimator_
+
 
 # Load the dataset
 def load_dataset(filepath):
@@ -161,13 +195,27 @@ def main():
         print(f"Low quality wines (0): {(y_test == 0).sum()}")
         print(f"High quality wines (1): {(y_test == 1).sum()}")
         
-        # Train SVM Classifier
-        print("\nTraining SVM Classifier")
+        # Train SVM Classifier with default parameters
+        print("\nTraining SVM Classifier with default parameters")
         svm_model = train_svm_classifier(X_train_scaled, y_train)
         
-        # Evaluate the Model
-        print("\nEvaluating the Model")
+        # Evaluate the Model with default parameters
+        print("\nEvaluating the Model with default parameters")
         accuracy, confusion_mat = evaluate_model(svm_model, X_test_scaled, y_test, show_plot=False)
+        
+        # Tune Hyperparameters
+        print("\nTuning Hyperparameters")
+        tuned_model = tune_hyperparameters(X_train_scaled, y_train)
+        
+        # Evaluate the tuned Model
+        print("\nEvaluating the tuned Model")
+        tuned_accuracy, tuned_confusion_mat = evaluate_model(tuned_model, X_test_scaled, y_test, show_plot=False)
+        
+        # Compare models
+        print("\nModel Comparison:")
+        print(f"Default SVM Accuracy: {accuracy:.4f}")
+        print(f"Tuned SVM Accuracy: {tuned_accuracy:.4f}")
+        print(f"Improvement: {(tuned_accuracy - accuracy) * 100:.2f}%")
 
     else:
         print("Failed to load the dataset")
