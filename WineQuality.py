@@ -170,6 +170,22 @@ def main():
         print(f"High quality wines (1): {quality_counts.get(1, 0)}")
         print(f"Percentage of high quality wines: {quality_counts.get(1, 0) / len(df) * 100:.2f}%")
         
+        # Bar chart of wine quality distribution
+        plt.figure(figsize=(8, 6))
+        bars = plt.bar(['Low Quality', 'High Quality'], [quality_counts.get(0, 0), quality_counts.get(1, 0)])
+        plt.title('Distribution of Wine Quality')
+        plt.ylabel('Count')
+        plt.xlabel('Wine Quality')
+        
+        # Add count labels on top of bars
+        for bar in bars:
+            height = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width()/2., height + 5,
+                    f'{height}', ha='center', va='bottom')
+        
+        plt.tight_layout()
+        plt.show()
+        
         # Select Features and Target
         print("\nSelect Features and Target")
         X, y = select_features_target(df)
@@ -177,6 +193,14 @@ def main():
         print(X.head())
         print("\nTarget (y):")
         print(y.head())
+        
+        # Correlation heatmap of features
+        plt.figure(figsize=(12, 10))
+        correlation_matrix = X.corr()
+        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', linewidths=0.5)
+        plt.title('Correlation Heatmap of Wine Features')
+        plt.tight_layout()
+        plt.show()
         
         # Split and Standardize the Dataset
         print("\nSplit and Standardize the Dataset")
@@ -201,7 +225,7 @@ def main():
         
         # Evaluate the Model with default parameters
         print("\nEvaluating the Model with default parameters")
-        accuracy, confusion_mat = evaluate_model(svm_model, X_test_scaled, y_test, show_plot=False)
+        accuracy, confusion_mat = evaluate_model(svm_model, X_test_scaled, y_test, show_plot=True)
         
         # Tune Hyperparameters
         print("\nTuning Hyperparameters")
@@ -209,7 +233,7 @@ def main():
         
         # Evaluate the tuned Model
         print("\nEvaluating the tuned Model")
-        tuned_accuracy, tuned_confusion_mat = evaluate_model(tuned_model, X_test_scaled, y_test, show_plot=False)
+        tuned_accuracy, tuned_confusion_mat = evaluate_model(tuned_model, X_test_scaled, y_test, show_plot=True)
         
         # Compare models
         print("\nModel Comparison:")
